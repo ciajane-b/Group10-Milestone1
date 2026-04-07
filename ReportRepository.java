@@ -13,3 +13,22 @@ public class ReportRepository {
             s.execute("INSERT OR IGNORE INTO users VALUES ('Aldrian', 'user123', 'PVT')");
         } catch (SQLException e) { e.printStackTrace(); }
     }
+
+    public UserSession authenticate(String u, String p) {
+        String sql = "SELECT rank FROM users WHERE username=? COLLATE NOCASE AND password=?";
+        try (Connection conn = DriverManager.getConnection(URL); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, u); ps.setString(2, p);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return new UserSession(u, rs.getString("rank"));
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
+    }
+
+    public void saveLog(String user, String action) {
+        String sql = "INSERT INTO audit_logs (user, action) VALUES (?, ?)";
+        try (Connection conn = DriverManager.getConnection(URL); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, user); ps.setString(2, action);
+            ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+}
